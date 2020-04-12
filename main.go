@@ -54,11 +54,11 @@ func processLine(line string) {
 	ip := parts[0]
 	url := parts[6]
 
-	matches := streamNameRegex.FindAllStringSubmatch(url, 1)
-	if len(matches) == 0 {
+	match := streamNameRegex.FindStringSubmatch(url)
+	if len(match) == 0 {
 		return
 	}
-	streamName := matches[0][1]
+	streamName := match[1]
 
 	if _, ok := streamViewers[streamName]; !ok {
 		streamViewers[streamName] = map[string]struct{}{}
