@@ -14,13 +14,13 @@ import (
 var streamNameRegex = regexp.MustCompile(`\/hls\/(?P<streamName>.*)-\d+\.ts`)
 var streamViewers = map[string]map[string]byte{}
 
-var interval uint
+var interval time.Duration
 var logFile string
 
 func init() {
-	flag.UintVar(
-		&interval, "interval", 10,
-		"Interval in seconds between statistics output",
+	flag.DurationVar(
+		&interval, "interval", time.Duration(10*time.Second),
+		"Interval between statistics output",
 	)
 
 	flag.StringVar(
@@ -70,7 +70,7 @@ func countViews(logFile string) {
 	lineChan := make(chan string, 1000)
 	go readLines(logFile, lineChan)
 
-	ticker := time.NewTicker(time.Duration(interval) * time.Second)
+	ticker := time.NewTicker(interval)
 	for {
 		select {
 		case line := <-lineChan:
@@ -85,6 +85,6 @@ func countViews(logFile string) {
 }
 
 func main() {
-	fmt.Printf("Using logFile=%s\n", logFile)
+	fmt.Printf("Using interval=%s, logFile=%s\n", interval, logFile)
 	countViews(logFile)
 }
