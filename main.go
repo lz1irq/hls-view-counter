@@ -12,7 +12,7 @@ import (
 )
 
 var streamNameRegex = regexp.MustCompile(`\/hls\/(?P<streamName>.*)-\d+\.ts`)
-var streamViewers = map[string]map[string]byte{}
+var streamViewers = map[string]map[string]struct{}{}
 
 var interval time.Duration
 var logFile string
@@ -61,9 +61,9 @@ func processLine(line string) {
 	streamName := matches[0][1]
 
 	if _, ok := streamViewers[streamName]; !ok {
-		streamViewers[streamName] = map[string]byte{}
+		streamViewers[streamName] = map[string]struct{}{}
 	}
-	streamViewers[streamName][ip] = 0
+	streamViewers[streamName][ip] = struct{}{}
 }
 
 func countViews(logFile string) {
@@ -79,7 +79,7 @@ func countViews(logFile string) {
 			for streamName, viewers := range streamViewers {
 				fmt.Printf("stream=%s, viewers=%d\n", streamName, len(viewers))
 			}
-			streamViewers = map[string]map[string]byte{}
+			streamViewers = map[string]map[string]struct{}{}
 		}
 	}
 }
