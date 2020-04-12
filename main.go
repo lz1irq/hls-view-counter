@@ -60,10 +60,12 @@ func processLine(line string) {
 	}
 	streamName := match[1]
 
-	if _, ok := streamViewers[streamName]; !ok {
-		streamViewers[streamName] = map[string]struct{}{}
+	streamViewersPerStream, ok := streamViewers[streamName]
+	if !ok {
+		streamViewersPerStream = map[string]struct{}{}
+		streamViewers[streamName] = streamViewersPerStream
 	}
-	streamViewers[streamName][ip] = struct{}{}
+	streamViewersPerStream[ip] = struct{}{}
 }
 
 func countViews(logFile string) {
