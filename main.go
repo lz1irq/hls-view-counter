@@ -1,9 +1,9 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io"
-	"os"
 	"regexp"
 	"strings"
 	"time"
@@ -14,7 +14,22 @@ import (
 var streamNameRegex = regexp.MustCompile(`\/hls\/(?P<streamName>.*)-\d+\.ts`)
 var streamViewers = map[string]map[string]byte{}
 
-const interval = 10
+var interval uint
+var logFile string
+
+func init() {
+	flag.UintVar(
+		&interval, "interval", 10,
+		"Interval in seconds between statistics output",
+	)
+
+	flag.StringVar(
+		&logFile, "logfile", "/var/log/nginx/access.log",
+		"Path to Nginx access log file",
+	)
+
+	flag.Parse()
+}
 
 func readLines(logFile string, out chan string) {
 	t, err := tail.TailFile(
@@ -55,7 +70,7 @@ func countViews(logFile string) {
 	lineChan := make(chan string, 1000)
 	go readLines(logFile, lineChan)
 
-	ticker := time.NewTicker(interval * time.Second)
+	ticker := time.NewTicker(time.Duration(interval) * time.Second)
 	for {
 		select {
 		case line := <-lineChan:
@@ -70,11 +85,6 @@ func countViews(logFile string) {
 }
 
 func main() {
-	if len(os.Args) < 2 {
-		fmt.Printf("Usage: %s /path/to/access.log", os.Args[0])
-		os.Exit(5)
-	}
-	logFile := os.Args[1]
 	fmt.Printf("Using logFile=%s\n", logFile)
 	countViews(logFile)
 }
