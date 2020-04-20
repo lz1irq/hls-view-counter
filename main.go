@@ -3,14 +3,12 @@ package main
 import (
 	"flag"
 	"fmt"
-	"regexp"
 	"time"
 )
 
-var streamNameRegex = regexp.MustCompile(`\/hls\/(?P<streamName>.*)-\d+\.ts`)
-
 var interval time.Duration
 var logFile string
+var xmlStatsURL string
 var exportHTTP string
 var exportCollectd string
 
@@ -23,6 +21,11 @@ func init() {
 	flag.StringVar(
 		&logFile, "logfile", "/var/log/nginx/access.log",
 		"Path to Nginx access log file",
+	)
+
+	flag.StringVar(
+		&xmlStatsURL, "stats.url", "",
+		"URL to nginx-rtmp XML statistics URL",
 	)
 
 	flag.StringVar(
@@ -40,7 +43,7 @@ func init() {
 
 func main() {
 	fmt.Printf("Using interval=%s, logFile=%s\n", interval, logFile)
-	counter := newViewCounter(logFile, interval)
+	counter := newViewCounter(logFile, interval, xmlStatsURL)
 
 	if exportHTTP != "" {
 		httpExporter := HttpViewCountExporter{}
