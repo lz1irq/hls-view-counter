@@ -9,6 +9,7 @@ import (
 var interval time.Duration
 var logFile string
 var xmlStatsURL string
+var exportStdout bool
 var exportHTTP string
 var exportCollectd string
 
@@ -16,6 +17,11 @@ func init() {
 	flag.DurationVar(
 		&interval, "interval", time.Duration(10*time.Second),
 		"Interval between statistics output",
+	)
+
+	flag.BoolVar(
+		&exportStdout, "export.stdout", true,
+		"Print stream statistics on standard output",
 	)
 
 	flag.StringVar(
@@ -44,6 +50,10 @@ func init() {
 func main() {
 	fmt.Printf("Using interval=%s, logFile=%s\n", interval, logFile)
 	counter := newViewCounter(logFile, interval, xmlStatsURL)
+
+	if exportStdout {
+		counter.addExporter(&stdoutExporter{})
+	}
 
 	if exportHTTP != "" {
 		httpExporter := HttpViewCountExporter{}

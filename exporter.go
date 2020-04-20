@@ -16,6 +16,22 @@ type ViewCountExporter interface {
 	export(config string)
 }
 
+// stdout exporter
+type stdoutExporter struct {
+}
+
+func (s *stdoutExporter) export(config string) {
+	return
+}
+
+func (s *stdoutExporter) updateViewCount(newViews map[string]int, updatedAt int64) {
+	fmt.Printf("updatedAt=%d; ", updatedAt)
+	for stream, views := range newViews {
+		fmt.Printf("stream=%s, views=%d; ", stream, views)
+	}
+	fmt.Println()
+}
+
 // HTTP exporter
 type httpViewsData struct {
 	Streams   map[string]int `json:"streams"`
@@ -92,7 +108,7 @@ func (c *CollectdExporter) updateViewCount(newViews map[string]int, updatedAt in
 			c.interval,
 			updatedAt, viewCount,
 		)
-		fmt.Printf("%s\n", statLine)
+		fmt.Println(statLine)
 		c.socket.Write([]byte(statLine))
 	}
 }
