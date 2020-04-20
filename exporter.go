@@ -56,6 +56,7 @@ const collectdValueName = "hls_viewers"
 type CollectdExporter struct {
 	hostname string
 	socket   net.Conn
+	interval int
 }
 
 func (c *CollectdExporter) getHostname() string {
@@ -74,6 +75,7 @@ func (c *CollectdExporter) getHostname() string {
 func (c *CollectdExporter) export(sockAddr string) {
 	var err error
 	c.hostname = c.getHostname()
+	c.interval = int(interval.Seconds())
 	c.socket, err = net.Dial(collectdSocketType, sockAddr)
 	if err != nil {
 		fmt.Errorf("%s\n", err.Error())
@@ -83,14 +85,14 @@ func (c *CollectdExporter) export(sockAddr string) {
 func (c *CollectdExporter) updateViewCount(newViews map[string]int, updatedAt int64) {
 	for streamName, viewCount := range newViews {
 		statLine := fmt.Sprintf(
-			"PUTVAL %s/%s-%s/%s-%s %d:%d",
+			"PUTVAL %s/%s-%s/%s-%s interval=%d %d:%d\n",
 			c.hostname,
 			collectdPluginName, streamName,
 			collectdDataType, collectdValueName,
+			c.interval,
 			updatedAt, viewCount,
 		)
 		fmt.Printf("%s\n", statLine)
 		c.socket.Write([]byte(statLine))
-
 	}
 }
