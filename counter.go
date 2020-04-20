@@ -42,6 +42,7 @@ func (v *viewCounter) readLines(out chan string) {
 		v.logFile,
 		tail.Config{
 			Follow: true,
+			ReOpen: true,
 			Location: &tail.SeekInfo{
 				Whence: io.SeekEnd,
 			},
