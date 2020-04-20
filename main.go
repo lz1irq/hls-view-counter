@@ -12,6 +12,7 @@ var streamNameRegex = regexp.MustCompile(`\/hls\/(?P<streamName>.*)-\d+\.ts`)
 var interval time.Duration
 var logFile string
 var httpBind string
+var exportCollectd string
 
 func init() {
 	flag.DurationVar(
@@ -29,6 +30,11 @@ func init() {
 		"Address and port to bind HTTP JSON export to",
 	)
 
+	flag.StringVar(
+		&exportCollectd, "export.collectd", "",
+		"Collectd Unix socket path to write statistics to",
+	)
+
 	flag.Parse()
 }
 
@@ -40,6 +46,12 @@ func main() {
 		httpExporter := HttpViewCountExporter{}
 		go httpExporter.export(httpBind)
 		counter.addExporter(&httpExporter)
+	}
+
+	if exportCollectd != "" {
+		collectdExporter := CollectdExporter{}
+		go collectdExporter.export(exportCollectd)
+		counter.addExporter(&collectdExporter)
 	}
 
 	counter.countViews()
