@@ -166,14 +166,17 @@ func (v *viewCounter) countViews() {
 			v.processLine(line)
 		case <-ticker.C:
 			v.exportViews = v.getRTMPStreamData()
-			for streamName, viewers := range v.streamViewers {
-				fmt.Printf("stream=%s, viewers=%d\n", streamName, len(viewers))
-				v.exportViews[streamName] = len(viewers)
+			for streamName, hlsViewers := range v.streamViewers {
+				if _, ok := v.exportViews[streamName]; ok {
+					v.exportViews[streamName] += len(hlsViewers)
+				} else {
+					v.exportViews[streamName] = len(hlsViewers)
+				}
 			}
+			fmt.Println()
+
 			v.exportUpdatedAt = time.Now().Unix()
 			v.updateExporters()
-
-			v.streamViewers = map[string]map[string]struct{}{}
 		}
 	}
 }
